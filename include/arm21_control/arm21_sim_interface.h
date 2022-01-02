@@ -8,7 +8,6 @@
 #define ARM21_SIM_INTERFACE_H
 
 #include <ros_control_boilerplate/generic_hw_interface.h>
-#include <thread>
 
 namespace arm21
 {
@@ -26,8 +25,6 @@ namespace arm21
   protected:
     void feedback(std::string serial_msg);
     ros::ServiceClient _client;
-
-    std::thread rx_thread;
   };
 }
 

@@ -10,23 +10,12 @@
 #include <iomanip>
 #include <rover_utils/math_helpers.h>
 
-void hello()
-{
-  ros::Rate rate(50);
-  while (true)
-  {
-    ROS_INFO("HELLO");
-    rate.sleep();
-  }
-}
-
 namespace arm21
 {
   Arm21SimInterface::Arm21SimInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
       : ros_control_boilerplate::GenericHWInterface(nh, urdf_model)
   {
     _client = nh.serviceClient<arm21_control::serial>("/serial_echo");
-    rx_thread = std::thread(hello);
   }
 
   void Arm21SimInterface::init()
