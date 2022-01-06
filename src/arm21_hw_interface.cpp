@@ -102,9 +102,9 @@ namespace arm21
     msg_to_sent += "0000"; // Right speed
     msg_to_sent += to_serial(rover::map(axis_1_deg, -135, 135, -999, 999));
     msg_to_sent += to_serial(rover::map(axis_2_deg, 24.2, 85.7, 999, 0));
-    msg_to_sent += to_serial(rover::map(axis_3_deg, 92.6, 145.3, 0, 999));
-    msg_to_sent += to_serial(rover::map(axis_4_deg, -90, 90, -999, 999));
-    msg_to_sent += to_serial(rover::map(axis_5_deg, -90, 90, -999, 999));
+    msg_to_sent += to_serial(rover::map(axis_3_deg, 92.6, 145.3, 0, -999));
+    msg_to_sent += to_serial(rover::map(-axis_4_deg, -90, 90, -999, 999));
+    msg_to_sent += to_serial(rover::map(-axis_5_deg, -90, 90, -999, 999));
     msg_to_sent += to_serial(rover::map(axis_6_deg, -180, 180, -999, 999));
     msg_to_sent += "0000"; // Gripper
     msg_to_sent += "0000000000000000400";
@@ -138,12 +138,12 @@ namespace arm21
     };
 
     // Encoder values are in between -999 and 999
-    int16_t axis1 = serial_to_int(serial_msg.substr(1, 4));
-    int16_t axis2 = serial_to_int(serial_msg.substr(5, 4));
-    int16_t axis3 = serial_to_int(serial_msg.substr(9, 4));
-    int16_t axis4 = serial_to_int(serial_msg.substr(13, 4));
-    int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
-    int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
+    int16_t axis1 = serial_to_int(serial_msg.substr(22, 4));
+    int16_t axis2 = serial_to_int(serial_msg.substr(27, 4));
+    int16_t axis3 = serial_to_int(serial_msg.substr(32, 4));
+    int16_t axis4 = serial_to_int(serial_msg.substr(37, 4));
+    int16_t axis5 = serial_to_int(serial_msg.substr(42, 4));
+    int16_t axis6 = serial_to_int(serial_msg.substr(47, 4));
 
     /* Axis 1 takes values in between -999 and 999, corresponding to -135 deg to 135 deg */
     /* Axis 2 takes values in between 0 and 999, corresponding to 85.7 deg to 24.2 deg */
@@ -155,8 +155,8 @@ namespace arm21
     double axis1_position = rover::map((double)axis1, -999, 999, -135 * DEG_TO_RAD, 135 * DEG_TO_RAD);
     double axis2_position = rover::map((double)axis2, 0, 999, 0, -(85.7 - 24.2) * DEG_TO_RAD);
     double axis3_position = rover::map((double)axis3, 0, 999, 0, -(145.3 - 92.6) * DEG_TO_RAD);
-    double axis4_position = rover::map((double)axis4, -999, 999, -90 * DEG_TO_RAD, 90 * DEG_TO_RAD);
-    double axis5_position = rover::map((double)axis5, -999, 999, -90 * DEG_TO_RAD, 90 * DEG_TO_RAD);
+    double axis4_position = rover::map(-(double)axis4, -999, 999, -90 * DEG_TO_RAD, 90 * DEG_TO_RAD);
+    double axis5_position = rover::map(-(double)axis5, -999, 999, -90 * DEG_TO_RAD, 90 * DEG_TO_RAD);
     double axis6_position = rover::map((double)axis6, -999, 999, -180 * DEG_TO_RAD, 180 * DEG_TO_RAD);
 
     joint_position_[0] = axis1_position;
