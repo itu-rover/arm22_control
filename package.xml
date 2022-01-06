@@ -19,11 +19,13 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>serial</build_depend>
+  <build_depend>ros_control_boilerplate</build_depend>
   <build_depend>rover_utils</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>serial</build_export_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>serial</exec_depend>
+  <exec_depend>ros_control_boilerplate</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

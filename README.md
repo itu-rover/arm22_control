@@ -3,7 +3,7 @@
 ---
 **NOTE**
 
-This package has build dependencies on [ros_control_boilerplate](https://github.com/PickNikRobotics/ros_control_boilerplate) and [rover_utils](https://github.com/burkap/rover_utils) pkg
+This package has build dependencies on [ros_control_boilerplate](https://github.com/PickNikRobotics/ros_control_boilerplate), [serial](https://github.com/wjwwood/serial) and [rover_utils](https://github.com/burkap/rover_utils) pkg
 
 ---
 
