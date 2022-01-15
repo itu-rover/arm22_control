@@ -46,7 +46,7 @@ namespace arm21
     static int count = 0;
     /* Axis 1 takes values in between -999 and 999, corresponding to -135 deg to 135 deg */
     /* Axis 2 takes values in between 0 and 999, corresponding to 85.7 deg to 24.2 deg */
-    /* Axis 3 takes values in between 0 and 999, corresponding to 92.6 deg to 145.3 deg 
+    /* Axis 3 takes values in between 0 and 999, corresponding to 92.6 deg to 145.3 deg */
     /* Axis 4 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
     /* Axis 5 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
     /* Axis 6 takes values in between -999 and 999, corresponding to -180 deg to 180 deg */
@@ -147,7 +147,7 @@ namespace arm21
 
     /* Axis 1 takes values in between -999 and 999, corresponding to -135 deg to 135 deg */
     /* Axis 2 takes values in between 0 and 999, corresponding to 85.7 deg to 24.2 deg */
-    /* Axis 3 takes values in between 0 and 999, corresponding to 92.6 deg to 145.3 deg 
+    /* Axis 3 takes values in between 0 and 999, corresponding to 92.6 deg to 145.3 deg */
     /* Axis 4 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
     /* Axis 5 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
     /* Axis 6 takes values in between -999 and 999, corresponding to -180 deg to 180 deg */
