@@ -8,14 +8,13 @@ This package has build dependencies on [ros_control_boilerplate](https://github.
 ---
 
 ## Usage with simulation
-
 Start the hardware interface and ROS controllers:
 
-```roslaunch arm21_control control_sim.launch``` 
+```roslaunch arm22_control control_sim.launch``` 
 
 Start the serial echo server:
 
-```rosrun arm21_control serial.py```
+```rosrun arm22_control serial.py```
 
 You can see the results in RViz.
 
@@ -26,6 +25,6 @@ You can see the results in RViz.
 
 After that, run the following command to start the hardware interface and ROS controllers:
 
-```roslaunch arm21_control control_hw.launch``` 
+```roslaunch arm22_control control_hw.launch``` 
 
 You can see the results in RViz.
