@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from arm21_control.srv import serial, serialResponse
+from arm22_control.srv import serial, serialResponse
 import rospy
 
 def handle(req):

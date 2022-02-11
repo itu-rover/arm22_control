@@ -8,18 +8,14 @@ generic_hw_control_loop:
 
 hardware_interface:
   joints:
-    - joint_1
-    - joint_2
-    - joint_3
-    - joint_4
-    - joint_5
-    - joint_6
-    - joint_left
-    - joint_right
-    - left_front_joint
-    - left_rear_joint
-    - right_front_joint
-    - right_rear_joint
+    - axis_1
+    - axis_2
+    - axis_3
+    - axis_4
+    - axis_5
+    - axis_6
+    - axis_parmak_1
+    - axis_parmak_2
 
 # Publish all joint states ----------------------------------
 # Creates the /joint_states topic necessary in ROS
@@ -30,12 +26,12 @@ joint_state_controller:
 manipulator_controller:
   type: position_controllers/JointTrajectoryController
   joints:
-    - joint_1
-    - joint_2
-    - joint_3
-    - joint_4
-    - joint_5
-    - joint_6
+    - axis_1
+    - axis_2
+    - axis_3
+    - axis_4
+    - axis_5
+    - axis_6
 
   constraints:
     goal_time: 0.6
@@ -51,9 +47,9 @@ controller_list:
       type: FollowJointTrajectory
       default: true
       joints:
-        - joint_1
-        - joint_2
-        - joint_3
-        - joint_4
-        - joint_5
-        - joint_6
+        - axis_1
+        - axis_2
+        - axis_3
+        - axis_4
+        - axis_5
+        - axis_6

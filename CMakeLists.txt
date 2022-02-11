@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(arm21_control)
+project(arm22_control)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -127,7 +127,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES arm21_control
+#  LIBRARIES arm22_control
 #  CATKIN_DEPENDS roscpp serial
   CATKIN_DEPENDS message_runtime
 #  DEPENDS system_lib
@@ -145,11 +145,11 @@ include_directories(
 )
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/arm21_control.cpp
+#   src/${PROJECT_NAME}/arm22_control.cpp
 # )
 
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/arm21_control.cpp
+#   src/${PROJECT_NAME}/arm22_control.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -157,25 +157,25 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/arm21_control_node.cpp)
-add_executable(arm21_hw_main
-  include/arm21_control/arm21_hw_interface.h
-  src/arm21_hw_interface.cpp
-  src/arm21_hw_main.cpp
+# add_executable(${PROJECT_NAME}_node src/arm22_control_node.cpp)
+add_executable(arm22_hw_main
+  include/arm22_control/arm22_hw_interface.h
+  src/arm22_hw_interface.cpp
+  src/arm22_hw_main.cpp
 )
 
-add_executable(arm21_sim_main
-  include/arm21_control/arm21_sim_interface.h
-  src/arm21_sim_interface.cpp
-  src/arm21_sim_main.cpp
+add_executable(arm22_sim_main
+  include/arm22_control/arm22_sim_interface.h
+  src/arm22_sim_interface.cpp
+  src/arm22_sim_main.cpp
 )
 
-add_dependencies(arm21_hw_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(arm21_hw_main
+add_dependencies(arm22_hw_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(arm22_hw_main
   ${catkin_LIBRARIES}
 )
-add_dependencies(arm21_sim_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(arm21_sim_main
+add_dependencies(arm22_sim_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(arm22_sim_main
   ${catkin_LIBRARIES}
 )
 
@@ -245,7 +245,7 @@ catkin_install_python(PROGRAMS
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_arm21_control.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_arm22_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
