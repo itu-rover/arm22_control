@@ -5,6 +5,9 @@
 
   <!-- Load example URDF --> 
   <param name="robot_description" textfile="$(find arm22_descriptions)/urdf/arm22.urdf"/>
+    
+  <!-- Load hw interface settings before initiation -->
+  <rosparam file="$(find arm22_control)/config/settings.yaml" />
 
   <!-- Load hardware interface -->
   <node name="arm22_hw_interface" pkg="arm22_control" type="arm22_hw_main"

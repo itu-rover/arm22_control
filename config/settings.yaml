@@ -1,0 +1,3 @@
+serial:
+  port: "/dev/heroRK"
+  baudrate: 115200

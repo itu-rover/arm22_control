@@ -1,25 +1,54 @@
 /**
  * @author B. Burak Payzun
  * @date 2022-02-10
- * 
+ *
  */
 
 #include <arm22_control/arm22_hw_interface.h>
 #include <rover_utils/math_helpers.h>
+#include <string>
 
 namespace arm22
 {
   arm22HWInterface::arm22HWInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
       : ros_control_boilerplate::GenericHWInterface(nh, urdf_model)
   {
-    serial_ = new serial::Serial("/dev/ttyUSB0", 115200, serial::Timeout::simpleTimeout(200));
-    if (serial_->isOpen())
+    // Read settings.yaml
+    nh.param<std::string>("/serial/port", this->port, "/please_fill/settings.yaml");
+    nh.param("/serial/baudrate", this->baudrate, 1);
+
+    try
     {
-      ROS_INFO("Succesfully opened the serial port.");
+      ROS_INFO("Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
+      serial_ = new serial::Serial(this->port, this->baudrate, serial::Timeout::simpleTimeout(200));
+      if (serial_->isOpen())
+      {
+        ROS_INFO("Succesfully opened the serial port.");
+      }
+      else
+      {
+        ROS_ERROR("Failed to open the serial port.");
+        ros::shutdown();
+      }
     }
-    else
+    catch (serial::IOException &e)
     {
-      ROS_INFO("Failed to open the serial port.");
+      switch (e.getErrorNumber())
+      {
+      case 2:
+        ROS_ERROR("Failed to initiate serial, no such file, check if the serial cable is connected.");
+        break;
+      case 13:
+        ROS_ERROR("Failed to initiate serial, check permission.");
+        break;
+      default:
+        ROS_ERROR("Failed to initiate serial.");
+        ROS_ERROR("ERROR: %s", e.what());
+        break;
+      }
+
+      ROS_ERROR("SHUTTING DOWN!");
+      ros::shutdown();
     }
   }
 
