@@ -1,4 +1,4 @@
-# ROS Control package for rover 21' manipulator
+# ROS Control package for rover 22' manipulator
 
 ---
 **NOTE**
