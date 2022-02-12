@@ -9,6 +9,7 @@
 
 #include <ros_control_boilerplate/generic_hw_interface.h>
 #include <serial/serial.h>
+#include <thread>
 
 namespace arm22
 {
@@ -25,10 +26,18 @@ namespace arm22
 
   protected:
     void feedback(std::string serial_msg);
-
+    void read_loop();
+    ros::Rate* ptr_write_rate;
     serial::Serial *serial_;
     std::string port;
     int baudrate;
+    int read_rate;
+    int write_rate;
+    uint64_t ms_last;
+
+    std::thread rx_thread;
+
+    
   };
 }
 

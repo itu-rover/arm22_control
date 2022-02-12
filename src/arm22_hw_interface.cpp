@@ -16,11 +16,16 @@ namespace arm22
     // Read settings.yaml
     nh.param<std::string>("/serial/port", this->port, "/please_fill/settings.yaml");
     nh.param("/serial/baudrate", this->baudrate, 1);
+    nh.param("/serial/read_rate", this->read_rate, 1);
+    nh.param("/serial/write_rate", this->write_rate, 1);
+
+    ptr_write_rate = new ros::Rate(this->write_rate);
+    rx_thread = std::thread(&arm22HWInterface::hello, this);
 
     try
     {
       ROS_INFO("Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
-      serial_ = new serial::Serial(this->port, this->baudrate, serial::Timeout::simpleTimeout(200));
+      serial_ = new serial::Serial(this->port, this->baudrate, serial::Timeout::simpleTimeout(2000));
       if (serial_->isOpen())
       {
         ROS_INFO("Succesfully opened the serial port.");
@@ -49,6 +54,20 @@ namespace arm22
 
       ROS_ERROR("SHUTTING DOWN!");
       ros::shutdown();
+    }
+  }
+
+  void arm22HWInterface::read_loop()
+  {
+    ros::Rate rate(this->read_rate);
+    while (true)
+    {
+      std::string result = serial_->readline(26, "B");
+      
+    auto time_now = ros::Time::now().toNSec();
+    ROS_INFO("result is: %s, hz:, %lf", result.c_str(), 1/(double)(time_now-ms_last)/0.000000001);
+    rate.sleep();
+    ms_last = time_now;
     }
   }
 
@@ -94,10 +113,11 @@ namespace arm22
     msg_to_send += "F";
     ROS_INFO("Sending the msgx: %s  with a length of %ld", msg_to_send.c_str(), msg_to_send.size());
     serial_->write(msg_to_send);
-    std::string result = serial_->readline(26, "B");
-
-    ROS_INFO_THROTTLE(10, "Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
-    feedback(result);
+    
+    // std::string result = serial_->readline(26, "B");
+    ptr_write_rate->sleep();
+    // ROS_INFO_THROTTLE(10, "Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
+    // feedback(result);
   }
 
   void arm22HWInterface::feedback(std::string serial_msg)

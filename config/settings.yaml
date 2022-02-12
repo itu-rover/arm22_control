@@ -1,3 +1,5 @@
 serial:
   port: "/dev/heroRK"
   baudrate: 115200
+  read_rate: 60
+  write_rate: 60
