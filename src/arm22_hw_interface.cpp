@@ -85,7 +85,8 @@ namespace arm22
     msg_to_send += "S";
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], -3.14, 3.14, 999 / 2, -999 / 2), -250, 250));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1], -1.57, 1.57, -999, 999), -350, 350));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], 0, 2.146484375, -999, 999), -999, 999));
+    // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], 0, 1.0732421875, -999, 999), -999, 999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], -6.28, 6.28, 999, -999), -999, 999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, -999, 999), -999, 999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], -6.28, 6.28, 999, -999), -999, 999));
@@ -129,8 +130,8 @@ namespace arm22
 
     double axis1_position = rover::map((double)axis1, -999, 999, 6.28, -6.28);
     double axis2_position = rover::map((double)axis2, -999, 999, -1.57, 1.57);
-    // where 1.2.146484375 = 3.14 * 700/1024  pi = 1024
-    double axis3_position = rover::map((double)axis3, -999, 999, 0, 2.146484375);
+    // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
+    double axis3_position = rover::map((double)axis3, -999, 999, 0, 1.0732421875);
     double axis4_position = rover::map((double)axis4, -999, 999, 6.28, -6.28);
     double axis5_position = rover::map((double)axis5, -999, 999, -1.57, 1.57);
     double axis6_position = rover::map((double)axis6, -999, 999, 6.28, -6.28);
