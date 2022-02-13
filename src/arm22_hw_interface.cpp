@@ -20,7 +20,7 @@ namespace arm22
     nh.param("/serial/write_rate", this->write_rate, 1);
 
     ptr_write_rate = new ros::Rate(this->write_rate);
-    rx_thread = std::thread(&arm22HWInterface::hello, this);
+    rx_thread = std::thread(&arm22HWInterface::read_loop, this);
 
     try
     {
