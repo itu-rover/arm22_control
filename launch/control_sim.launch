@@ -4,14 +4,14 @@
   <arg name="debug" default="false" />
 
   <!-- Load example URDF --> 
-  <param name="robot_description" textfile="$(find rover_21_description)/urdf/rover_21_arm.urdf"/>
+  <param name="robot_description" textfile="$(find arm22_description)/urdf/arm22.urdf"/>
 
   <!-- Load hardware interface -->
-  <node name="arm21_hw_interface" pkg="arm21_control" type="arm21_sim_main"
+  <node name="arm22_hw_interface" pkg="arm22_control" type="arm22_sim_main"
       output="screen"/>
 
   <!-- Load controller settings -->
-  <rosparam file="$(find arm21_control)/config/controllers.yaml" command="load"/>
+  <rosparam file="$(find arm22_control)/config/controllers.yaml" command="load"/>
 
   <!-- Load controller manager -->
   <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" respawn="false"
@@ -21,7 +21,7 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
 
-  <include file="$(find arm21_moveit_config)/launch/move_group.launch">
+  <include file="$(find arm22_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="true"/>
     <arg name="fake_execution" value="false"/>
     <arg name="info" value="true"/> 
