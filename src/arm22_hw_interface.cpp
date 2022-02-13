@@ -121,26 +121,31 @@ namespace arm22
       return (s[0] == '0' ? -1 : 1) * stoi(s.substr(1, 3));
     };
 
-    int16_t axis1 = serial_to_int(serial_msg.substr(1, 4));
-    int16_t axis2 = serial_to_int(serial_msg.substr(5, 4));
-    int16_t axis3 = serial_to_int(serial_msg.substr(9, 4));
-    int16_t axis4 = serial_to_int(serial_msg.substr(13, 4));
-    int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
-    int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
+    try{
+      int16_t axis1 = serial_to_int(serial_msg.substr(1, 4));
+      int16_t axis2 = serial_to_int(serial_msg.substr(5, 4));
+      int16_t axis3 = serial_to_int(serial_msg.substr(9, 4));
+      int16_t axis4 = serial_to_int(serial_msg.substr(13, 4));
+      int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
+      int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
 
-    double axis1_position = rover::map((double)axis1, -999, 999, 6.28, -6.28);
-    double axis2_position = rover::map((double)axis2, -999, 999, -1.57, 1.57);
-    // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
-    double axis3_position = rover::map((double)axis3, -999, 999, 0, 1.0732421875);
-    double axis4_position = rover::map((double)axis4, -999, 999, 6.28, -6.28);
-    double axis5_position = rover::map((double)axis5, -999, 999, -1.57, 1.57);
-    double axis6_position = rover::map((double)axis6, -999, 999, 6.28, -6.28);
+      double axis1_position = rover::map((double)axis1, -999, 999, 6.28, -6.28);
+      double axis2_position = rover::map((double)axis2, -999, 999, -1.57, 1.57);
+      // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
+      double axis3_position = rover::map((double)axis3, -999, 999, 0, 1.0732421875);
+      double axis4_position = rover::map((double)axis4, -999, 999, 6.28, -6.28);
+      double axis5_position = rover::map((double)axis5, -999, 999, -1.57, 1.57);
+      double axis6_position = rover::map((double)axis6, -999, 999, 6.28, -6.28);
 
-    joint_position_[0] = axis1_position;
-    joint_position_[1] = axis2_position;
-    joint_position_[2] = axis3_position;
-    joint_position_[3] = axis4_position;
-    joint_position_[4] = axis5_position;
-    joint_position_[5] = axis6_position;
+      joint_position_[0] = axis1_position;
+      joint_position_[1] = axis2_position;
+      joint_position_[2] = axis3_position;
+      joint_position_[3] = axis4_position;
+      joint_position_[4] = axis5_position;
+      joint_position_[5] = axis6_position;
+    }
+    catch(std::invalid_argument &e){
+      return;
+    }
   }
 }
