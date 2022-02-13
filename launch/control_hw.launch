@@ -4,7 +4,7 @@
   <arg name="debug" default="false" />
 
   <!-- Load example URDF --> 
-  <param name="robot_description" textfile="$(find arm22_descriptions)/urdf/arm22.urdf"/>
+  <param name="robot_description" textfile="$(find arm22_description)/urdf/arm22.urdf"/>
     
   <!-- Load hw interface settings before initiation -->
   <rosparam file="$(find arm22_control)/config/settings.yaml" />
