@@ -208,7 +208,7 @@ target_link_libraries(arm22_sim_main
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 catkin_install_python(PROGRAMS
-  scripts/serial.py
+  scripts/serial_echo.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
