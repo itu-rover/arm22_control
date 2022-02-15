@@ -14,7 +14,7 @@ Start the hardware interface and ROS controllers:
 
 Start the serial echo server:
 
-```rosrun arm22_control serial.py```
+```rosrun arm22_control serial_echo.py```
 
 You can see the results in RViz.
 
