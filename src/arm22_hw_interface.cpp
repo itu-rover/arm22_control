@@ -76,27 +76,31 @@ namespace arm22
     static auto to_serial = [](double v)
     {
       std::stringstream ss;
-      ss << std::setw(3) << std::setfill('0') << abs((int)v);
-      return (v > 0 ? "1" : "0") + ss.str();
+      ss << std::setw(4) << std::setfill('0') << abs((int)v);
+      return ss.str();
     };
 
     comm_check_bit ^= 1;
     std::string msg_to_send = "";
     msg_to_send += "S";
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], -3.14, 3.14, 999 / 2, -999 / 2), -250, 250));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1], -1.57, 1.57, -999, 999), -350, 350));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], 3.14, -3.14, 0, 4096), 0, 4096));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1],-1.57, 1.57/2, 0, 1024 + 512), 512, 1024+512));
     // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], 0, 1.0732421875, -999, 999), -999, 999));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], -6.28, 6.28, 999, -999), -999, 999));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, -999, 999), -999, 999));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], -6.28, 6.28, 999, -999), -999, 999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], 0, 1.57, 0, 1024), 0, 1024));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], 6.28, -6.28, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], 6.28, -6.28, 0, 9999), 0, 9999));
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
-    ROS_INFO("Sending the msgx: %s  with a length of %ld", msg_to_send.c_str(), msg_to_send.size());
+    for (double &v : joint_position_command_){
+      ROS_INFO("%lf", v);
+    }
+    ROS_INFO("Sending the msg: %s  with a length of %ld", msg_to_send.c_str(), msg_to_send.size());
     serial_->write(msg_to_send);
+    ROS_INFO("%s", msg_to_send.c_str());
     std::string result = serial_->readline(26, "B");
 
-    ROS_INFO_THROTTLE(10, "Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
+    ROS_INFO("Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
     feedback(result);
   }
 
@@ -118,7 +122,7 @@ namespace arm22
     static auto serial_to_int = [](const std::string &s)
     {
       ROS_ASSERT(s.size() == 4);
-      return (s[0] == '0' ? -1 : 1) * stoi(s.substr(1, 3));
+      return stoi(s);
     };
 
     try{
@@ -129,13 +133,13 @@ namespace arm22
       int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
       int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
 
-      double axis1_position = rover::map((double)axis1, -999, 999, 6.28, -6.28);
-      double axis2_position = rover::map((double)axis2, -999, 999, -1.57, 1.57);
+      double axis1_position = rover::map((double)axis1, 0, 4096, 3.14, -3.14);
+      double axis2_position = rover::map((double)axis2, 0, 1024+512, -1.57, 1.57/2);
       // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
-      double axis3_position = rover::map((double)axis3, -999, 999, 0, 1.0732421875);
-      double axis4_position = rover::map((double)axis4, -999, 999, 6.28, -6.28);
-      double axis5_position = rover::map((double)axis5, -999, 999, -1.57, 1.57);
-      double axis6_position = rover::map((double)axis6, -999, 999, 6.28, -6.28);
+      double axis3_position = rover::map((double)axis3, 0, 1024, 0, 1.57);
+      double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
+      double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
+      double axis6_position = rover::map((double)axis6, 0, 9999, 6.28, -6.28);
 
       joint_position_[0] = axis1_position;
       joint_position_[1] = axis2_position;
