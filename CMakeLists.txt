@@ -209,6 +209,7 @@ target_link_libraries(arm22_sim_main
 # )
 catkin_install_python(PROGRAMS
   scripts/serial_echo.py
+  scripts/joystick_op.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
