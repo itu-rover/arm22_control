@@ -16,7 +16,7 @@ namespace arm22
     // Read settings.yaml
     nh.param<std::string>("/serial/port", this->port, "/please_fill/settings.yaml");
     nh.param("/serial/baudrate", this->baudrate, 1);
-
+    nh.param("/serial/encoder_delta_threshold", this->encoder_delta_threshold, 0.1);
     try
     {
       ROS_INFO("Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
@@ -141,6 +141,18 @@ namespace arm22
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
       double axis6_position = rover::map((double)axis6, 0, 9999, 6.28, -6.28);
 
+      if(fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
+          fabs(axis2_position - joint_position_[1]) > encoder_delta_threshold ||
+          fabs(axis3_position - joint_position_[2]) > encoder_delta_threshold ||
+          fabs(axis4_position - joint_position_[3]) > encoder_delta_threshold ||
+          fabs(axis5_position - joint_position_[4]) > encoder_delta_threshold ||
+          fabs(axis6_position - joint_position_[5]) > encoder_delta_threshold){
+            while(true){
+              ROS_ERROR("Encoder got a message with unexpected change. %lf %lf %lf %lf %lf %lf", axis1_position, axis2_position, axis3_position, axis4_position, axis5_position, axis6_position);
+              serial_->write("S555555F");
+              ros::Duration(5).sleep();
+            }
+        }
       joint_position_[0] = axis1_position;
       joint_position_[1] = axis2_position;
       joint_position_[2] = axis3_position;

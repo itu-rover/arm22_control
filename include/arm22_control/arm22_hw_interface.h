@@ -29,6 +29,7 @@ namespace arm22
     serial::Serial *serial_;
     std::string port;
     int baudrate;
+    double encoder_delta_threshold;
   };
 }
 
