@@ -30,7 +30,9 @@ class fk_teleop:
 
         self.rate = rospy.Rate(20)
 
+        comm_check_byte = 0
         while not rospy.is_shutdown():
+            comm_check_byte ^= 1
             message_to_send = ""
             message_to_send += "S"
             message_to_send += str(int(max(0, min(5 +
@@ -45,6 +47,7 @@ class fk_teleop:
                                    (self.axes[1] * self.buttons[4])*5, 9))))
             message_to_send += str(int(max(0, min(5 +
                                    (-self.axes[1] * self.buttons[5])*5, 9))))
+            message_to_send += str(comm_check_byte)
             message_to_send += "F"
             if self.is_resetting:
                 message_to_send = "RRRRR"
