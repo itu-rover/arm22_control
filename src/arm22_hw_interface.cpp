@@ -80,6 +80,12 @@ namespace arm22
       return ss.str();
     };
 
+    std::string result = serial_->readline(26, "B");
+
+    ROS_INFO("Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
+    feedback(result);
+
+
     comm_check_bit ^= 1;
     std::string msg_to_send = "";
     msg_to_send += "S";
@@ -98,10 +104,6 @@ namespace arm22
     ROS_INFO("Sending the msg: %s  with a length of %ld", msg_to_send.c_str(), msg_to_send.size());
     serial_->write(msg_to_send);
     ROS_INFO("%s", msg_to_send.c_str());
-    std::string result = serial_->readline(26, "B");
-
-    ROS_INFO("Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
-    feedback(result);
   }
 
   void arm22HWInterface::feedback(std::string serial_msg)
