@@ -25,6 +25,7 @@ namespace arm22
 
   protected:
     void feedback(std::string serial_msg);
+    int encoder_error_count = 0;
 
     serial::Serial *serial_;
     std::string port;
