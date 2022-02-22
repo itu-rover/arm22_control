@@ -89,7 +89,7 @@ namespace arm22
 
     std::string result = serial_->readline(26, "B");
 
-    ROS_INFO("Got encoder message: %s  with a length of %ld", result.c_str(), result.size());
+    ROS_INFO("Got encoder message: %s, length: %ld", result.c_str(), result.size());
     feedback(result);
 
 
@@ -105,10 +105,7 @@ namespace arm22
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], 6.28, -6.28, 0, 9999), 0, 9999));
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
-    for (double &v : joint_position_command_){
-      ROS_INFO("%lf", v);
-    }
-    ROS_INFO("Sending the msg: %s  with a length of %ld", msg_to_send.c_str(), msg_to_send.size());
+    ROS_INFO("Sending the msg: %s, length: %ld", msg_to_send.c_str(), msg_to_send.size());
     serial_->write(msg_to_send);
     ROS_INFO("%s", msg_to_send.c_str());
   }
