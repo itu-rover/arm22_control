@@ -8,6 +8,13 @@
 #include <rover_utils/math_helpers.h>
 #include <string>
 
+bool is_number(std::string str){
+  for(int i = 0; i < str.length(); i++){
+    if(str[i] >= '0' && str[i] <= '9') continue;
+    else return false;
+  }
+  return true;
+}
 namespace arm22
 {
   arm22HWInterface::arm22HWInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
@@ -118,6 +125,17 @@ namespace arm22
     if (serial_msg.size() != 26)
     {
       ROS_WARN("Encoder message with unexpected size: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
+      return;
+    }
+
+    if (!is_number(serial_msg))
+    {
+      ROS_WARN("Encoder message with non-number character: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
+      return;
+    }
+
+    if (serial_msg.rfind("S000000000000000000000000", 0) == 0){
+      ROS_WARN("Encoder message is all zeros: %ld bytes, [%s]\n You might want to reset encoder positions.", serial_msg.size(), serial_msg.c_str());
       return;
     }
 
