@@ -87,7 +87,7 @@ namespace arm22
       return ss.str();
     };
 
-    std::string result = serial_->readline(26, "B");
+    std::string result = serial_->readline(27, "B");
 
     ROS_INFO("Got encoder message: %s, length: %ld", result.c_str(), result.size());
     feedback(result);
@@ -119,13 +119,13 @@ namespace arm22
 
     */
 
-    if (serial_msg.size() != 26)
+    if (serial_msg.size() != 27)
     {
       ROS_WARN("Encoder message with unexpected size: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
       return;
     }
 
-    if (!is_number(serial_msg))
+    if (!is_number(serial_msg.substr(1,24)))
     {
       ROS_WARN("Encoder message with non-number character: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
       return;
