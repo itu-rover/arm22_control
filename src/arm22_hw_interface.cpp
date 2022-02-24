@@ -102,7 +102,7 @@ namespace arm22
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], -1.57/2, 1.57/2, 512, 1024+512), 512, 1024+512));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], 6.28, -6.28, 0, 9999), 0, 9999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, 0, 9999), 0, 9999));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], 6.28, -6.28, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], -6.28, 6.28, 0, 9999), 0, 9999));
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
     ROS_INFO("Sending the msg: %s, length: %ld", msg_to_send.c_str(), msg_to_send.size());
@@ -156,7 +156,7 @@ namespace arm22
       double axis3_position = rover::map((double)axis3, 512, 1024+512, -1.57/2, 1.57/2);
       double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
-      double axis6_position = rover::map((double)axis6, 0, 9999, 6.28, -6.28);
+      double axis6_position = rover::map((double)axis6, 0, 9999, -6.28, 6.28);
 
       if(fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
           fabs(axis2_position - joint_position_[1]) > encoder_delta_threshold ||
