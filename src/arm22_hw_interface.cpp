@@ -24,6 +24,9 @@ namespace arm22
     nh.param<std::string>("/serial/port", this->port, "/please_fill/settings.yaml");
     nh.param("/serial/baudrate", this->baudrate, 1);
     nh.param("/serial/encoder_delta_threshold", this->encoder_delta_threshold, 0.1);
+
+    write_toggle_service_ = nh.advertiseService("/hardware_interface/toggle_write", &arm22HWInterface::toggle_write, this);
+
     try
     {
       ROS_INFO("Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
@@ -57,6 +60,13 @@ namespace arm22
       ROS_ERROR("SHUTTING DOWN!");
       ros::shutdown();
     }
+  }
+
+  bool arm22::arm22HWInterface::toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res){
+    WRITE_TO_SERIAL ^= 1;
+    res.success = true;
+    res.message = (WRITE_TO_SERIAL ? "Now writing to serial." : "Now stopped writing to serial.");
+    return true;
   }
 
   void arm22HWInterface::enforceLimits(ros::Duration &period)
@@ -95,6 +105,17 @@ namespace arm22
 
     comm_check_bit ^= 1;
     std::string msg_to_send = "";
+    
+    if (!WRITE_TO_SERIAL)
+    {
+      joint_position_command_[0] = joint_position_[0];
+      joint_position_command_[1] = joint_position_[1];
+      joint_position_command_[2] = joint_position_[2];
+      joint_position_command_[3] = joint_position_[3];
+      joint_position_command_[4] = joint_position_[4];
+      joint_position_command_[5] = joint_position_[5];
+    }
+
     msg_to_send += "S";
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], 3.14, -3.14, 0, 4096), 0, 4096));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1],-1.57, 1.57/2, 0, 1024 + 512), 512, 1024+512));
@@ -105,9 +126,12 @@ namespace arm22
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], -6.28, 6.28, 0, 9999), 0, 9999));
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
-    ROS_INFO("Sending the msg: %s, length: %ld", msg_to_send.c_str(), msg_to_send.size());
-    serial_->write(msg_to_send);
-    ROS_INFO("%s", msg_to_send.c_str());
+    
+    ROS_INFO("%s Sending the msg: %s, length: %ld", (WRITE_TO_SERIAL ? "" : "NOT"), msg_to_send.c_str(), msg_to_send.size());
+
+    if(WRITE_TO_SERIAL){
+      serial_->write(msg_to_send);
+    }
   }
 
   void arm22HWInterface::feedback(std::string serial_msg)
@@ -157,8 +181,9 @@ namespace arm22
       double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
       double axis6_position = rover::map((double)axis6, 0, 9999, -6.28, 6.28);
-
-      if(fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
+      ROS_INFO("%d", WRITE_TO_SERIAL);
+      if (WRITE_TO_SERIAL && (
+          fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
           fabs(axis2_position - joint_position_[1]) > encoder_delta_threshold ||
           fabs(axis3_position - joint_position_[2]) > encoder_delta_threshold ||
           fabs(axis4_position - joint_position_[3]) > encoder_delta_threshold ||
@@ -181,6 +206,17 @@ namespace arm22
           joint_position_[4] = axis5_position;
           joint_position_[5] = axis6_position;
         }
+      }
+      else
+      {
+        encoder_error_count = 0;
+        joint_position_[0] = axis1_position;
+        joint_position_[1] = axis2_position;
+        joint_position_[2] = axis3_position;
+        joint_position_[3] = axis4_position;
+        joint_position_[4] = axis5_position;
+        joint_position_[5] = axis6_position;
+      }
     }
     catch(std::invalid_argument &e){
       return;

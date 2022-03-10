@@ -9,6 +9,7 @@
 
 #include <ros_control_boilerplate/generic_hw_interface.h>
 #include <serial/serial.h>
+#include <std_srvs/Trigger.h>
 
 namespace arm22
 {
@@ -24,9 +25,15 @@ namespace arm22
     virtual void enforceLimits(ros::Duration &period);
 
   protected:
+    bool toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
+    bool toggle_error(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
+
     void feedback(std::string serial_msg);
     int encoder_error_count = 0;
-
+  
+    bool WRITE_TO_SERIAL = false;
+    
+    ros::ServiceServer write_toggle_service_;
     serial::Serial *serial_;
     std::string port;
     int baudrate;
