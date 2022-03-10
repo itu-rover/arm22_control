@@ -188,7 +188,7 @@ namespace arm22
           fabs(axis3_position - joint_position_[2]) > encoder_delta_threshold ||
           fabs(axis4_position - joint_position_[3]) > encoder_delta_threshold ||
           fabs(axis5_position - joint_position_[4]) > encoder_delta_threshold ||
-          fabs(axis6_position - joint_position_[5]) > encoder_delta_threshold){
+          fabs(axis6_position - joint_position_[5]) > encoder_delta_threshold)){
             encoder_error_count++;
             ROS_ERROR("ERROR COUNT: %d | Encoder got a message with unexpected change. [%s] %lf %lf %lf %lf %lf %lf", encoder_error_count, serial_msg.c_str(), axis1_position, axis2_position, axis3_position, axis4_position, axis5_position, axis6_position);
             while(encoder_error_count > 5){
@@ -207,17 +207,6 @@ namespace arm22
           joint_position_[5] = axis6_position;
         }
       }
-      else
-      {
-        encoder_error_count = 0;
-        joint_position_[0] = axis1_position;
-        joint_position_[1] = axis2_position;
-        joint_position_[2] = axis3_position;
-        joint_position_[3] = axis4_position;
-        joint_position_[4] = axis5_position;
-        joint_position_[5] = axis6_position;
-      }
-    }
     catch(std::invalid_argument &e){
       return;
     }
