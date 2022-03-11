@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: melodic, ROS_REPO: main, TARGET_WORKSPACE: 'github:burkap/rover_utils#main github:wjwwood/serial#main github:PickNikRobotics/ros_control_boilerplate#melodic-devel'}
+          - {ROS_DISTRO: melodic, ROS_REPO: main, TARGET_WORKSPACE: '. github:burkap/rover_utils#main github:wjwwood/serial#main github:PickNikRobotics/ros_control_boilerplate#melodic-devel'}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
