@@ -8,6 +8,8 @@
 #include <rover_utils/math_helpers.h>
 #include <string>
 
+const std::string DEBUG_NAME = "hw_interface";
+
 bool is_number(std::string str){
   for(int i = 0; i < str.length(); i++){
     if(str[i] >= '0' && str[i] <= '9') continue;
@@ -27,17 +29,18 @@ namespace arm22
 
     write_toggle_service_ = nh.advertiseService("/hardware_interface/toggle_write", &arm22HWInterface::toggle_write, this);
 
+    // Initiate serial connection
     try
     {
-      ROS_INFO("Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
+      ROS_INFO_NAMED(DEBUG_NAME, "Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
       serial_ = new serial::Serial(this->port, this->baudrate, serial::Timeout::simpleTimeout(200));
       if (serial_->isOpen())
       {
-        ROS_INFO("Succesfully opened the serial port.");
+        ROS_INFO_NAMED(DEBUG_NAME, "Succesfully opened the serial port.");
       }
       else
       {
-        ROS_ERROR("Failed to open the serial port.");
+        ROS_ERROR_NAMED(DEBUG_NAME, "Failed to open the serial port.");
         ros::shutdown();
       }
     }
@@ -46,18 +49,17 @@ namespace arm22
       switch (e.getErrorNumber())
       {
       case 2:
-        ROS_ERROR("Failed to initiate serial, no such file, check if the serial cable is connected.");
+        ROS_ERROR_NAMED(DEBUG_NAME, "No such file as '%s', TIP: check if the serial cable is connected.", this->port.c_str());
         break;
       case 13:
-        ROS_ERROR("Failed to initiate serial, check permission.");
+        ROS_ERROR_NAMED(DEBUG_NAME, "Failed to initiate serial, TIP: Check permissions.");
         break;
       default:
-        ROS_ERROR("Failed to initiate serial.");
-        ROS_ERROR("ERROR: %s", e.what());
+        ROS_ERROR_NAMED(DEBUG_NAME, "Failed to initiate serial. Full Error: %s", e.what());
         break;
       }
 
-      ROS_ERROR("SHUTTING DOWN!");
+      ROS_ERROR_NAMED(DEBUG_NAME, "Exception while trying to initiate serial, SHUTTING DOWN!");
       ros::shutdown();
     }
   }
