@@ -26,7 +26,6 @@ namespace arm22
 
   protected:
     bool toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
-    bool toggle_error(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
 
     void feedback(std::string serial_msg);
     int encoder_error_count = 0;
