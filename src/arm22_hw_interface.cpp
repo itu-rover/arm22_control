@@ -27,7 +27,7 @@ namespace arm22
     nh.param("/serial/baudrate", this->baudrate, 1);
     nh.param("/serial/encoder_delta_threshold", this->encoder_delta_threshold, 0.1);
 
-    write_toggle_service_ = nh.advertiseService("/hardware_interface/toggle_write", &arm22HWInterface::toggle_write, this);
+    allow_write_service_ = nh.advertiseService("/hardware_interface/allow_write", &arm22HWInterface::allow_write, this);
 
     // Initiate serial connection
     try
@@ -64,10 +64,10 @@ namespace arm22
     }
   }
 
-  bool arm22::arm22HWInterface::toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res){
-    WRITE_TO_SERIAL ^= 1;
+  bool arm22::arm22HWInterface::allow_write(std_srvs::SetBoolRequest &req, std_srvs::SetBoolResponse &res){
+    ALLOW_WRITE = req.data;
     res.success = true;
-    res.message = (WRITE_TO_SERIAL ? "Now writing to serial." : "Now stopped writing to serial.");
+    res.message = (ALLOW_WRITE ? "WRITING ALLOWED" : "WRITING DISALLOWED");
     return true;
   }
 
@@ -108,7 +108,7 @@ namespace arm22
     comm_check_bit ^= 1;
     std::string msg_to_send = "";
     
-    if (!WRITE_TO_SERIAL)
+    if (!ALLOW_WRITE)
     {
       joint_position_command_[0] = joint_position_[0];
       joint_position_command_[1] = joint_position_[1];
@@ -129,9 +129,9 @@ namespace arm22
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
     
-    ROS_INFO("%s Sending the msg: %s, length: %ld", (WRITE_TO_SERIAL ? "" : "NOT"), msg_to_send.c_str(), msg_to_send.size());
+    ROS_INFO("%sSerial message: [%s]", (ALLOW_WRITE ? "\033[1;32m" : "\033[1;31m"),msg_to_send.c_str());
 
-    if(WRITE_TO_SERIAL){
+    if(ALLOW_WRITE){
       serial_->write(msg_to_send);
     }
   }
@@ -183,8 +183,8 @@ namespace arm22
       double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
       double axis6_position = rover::map((double)axis6, 0, 9999, -6.28, 6.28);
-      ROS_INFO("%d", WRITE_TO_SERIAL);
-      if (WRITE_TO_SERIAL && (
+      ROS_INFO("%d", ALLOW_WRITE);
+      if (ALLOW_WRITE && (
           fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
           fabs(axis2_position - joint_position_[1]) > encoder_delta_threshold ||
           fabs(axis3_position - joint_position_[2]) > encoder_delta_threshold ||
