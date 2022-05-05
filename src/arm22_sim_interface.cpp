@@ -10,12 +10,20 @@
 #include <iomanip>
 #include <rover_utils/math_helpers.h>
 
+bool is_number(std::string str){
+  for(int i = 0; i < str.length(); i++){
+    if(str[i] >= '0' && str[i] <= '9') continue;
+    else return false;
+  }
+  return true;
+}
 namespace arm22
 {
   arm22SimInterface::arm22SimInterface(ros::NodeHandle &nh, urdf::Model *urdf_model)
       : ros_control_boilerplate::GenericHWInterface(nh, urdf_model)
   {
     _client = nh.serviceClient<arm22_control::serial>("/serial_echo");
+    write_toggle_service_ = nh.advertiseService("/hardware_interface/toggle_write", &arm22SimInterface::toggle_write, this);
   }
 
   void arm22SimInterface::init()
@@ -33,46 +41,31 @@ namespace arm22
 
   void arm22SimInterface::write(ros::Duration &elapsed_time)
   {
-    /* Axis 1 takes values in between -999 and 999, corresponding to -135 deg to 135 deg */
-    /* Axis 2 takes values in between 0 and 999, corresponding to 85.7 deg to 24.2 deg */
-    /* Axis 3 takes values in between 0 and 999, corresponding to 92.6 deg to 145.3 deg 
-    /* Axis 4 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
-    /* Axis 5 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
-    /* Axis 6 takes values in between -999 and 999, corresponding to -180 deg to 180 deg */
 
-    double axis_1_deg = joint_position_command_[0] * RAD_TO_DEG;
-    double axis_2_deg = 85.7 + (joint_position_command_[1] * RAD_TO_DEG);
-    double axis_3_deg = 92.6 - (joint_position_command_[2] * RAD_TO_DEG);
-    double axis_4_deg = joint_position_command_[3] * RAD_TO_DEG;
-    double axis_5_deg = joint_position_command_[4] * RAD_TO_DEG;
-    double axis_6_deg = joint_position_command_[5] * RAD_TO_DEG;
-
-    axis_1_deg = rover::clamp(axis_1_deg, -135.0, 135.0);
-    axis_2_deg = rover::clamp(axis_2_deg, 24.2, 85.7);
-    axis_3_deg = rover::clamp(axis_3_deg, 92.6, 145.3);
-    axis_4_deg = rover::clamp(axis_4_deg, -90.0, 90.0);
-    axis_5_deg = rover::clamp(axis_5_deg, -90.0, 90.0);
-    axis_6_deg = rover::clamp(axis_6_deg, -180.0, 180.0);
-
-    auto to_serial = [](double v)
+    static auto to_serial = [](double v)
     {
       std::stringstream ss;
-      ss << std::setw(3) << std::setfill('0') << abs((int)v);
-      return (v < 0 ? "1" : "0") + ss.str();
+      ss << std::setw(4) << std::setfill('0') << abs((int)v);
+      return ss.str();
     };
 
-    std::string msg_to_sent = "";
-    msg_to_sent += "S";
-    msg_to_sent += to_serial(rover::map(axis_1_deg, -135, 135, -999, 999));
-    msg_to_sent += to_serial(rover::map(axis_2_deg, 24.2, 85.7, 999, 0));
-    msg_to_sent += to_serial(rover::map(axis_3_deg, 92.6, 145.3, 0, 999));
-    msg_to_sent += to_serial(rover::map(axis_4_deg, -90, 90, -999, 999));
-    msg_to_sent += to_serial(rover::map(axis_5_deg, -90, 90, -999, 999));
-    msg_to_sent += to_serial(rover::map(axis_6_deg, -180, 180, -999, 999));
-    msg_to_sent += "F";
+    static int comm_check_bit = 0;
+    comm_check_bit ^= 1;
+
+    std::string msg_to_send = "";
+    msg_to_send += "S";
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], 3.14, -3.14, 0, 4096), 0, 4096));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1],-1.57, 1.57/2, 0, 1024 + 512), 512, 1024+512));
+    // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], -1.57/2, 1.57/2, 512, 1024+512), 512, 1024+512));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], 6.28, -6.28, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], -6.28, 6.28, 0, 9999), 0, 9999));
+    msg_to_send += (comm_check_bit ? "1" : "0");
+    msg_to_send += "F";
 
     arm22_control::serial srv;
-    srv.request.serial_msg = msg_to_sent;
+    srv.request.serial_msg = msg_to_send;
     if (_client.call(srv))
     {
 
@@ -80,6 +73,12 @@ namespace arm22
     }
 
     feedback(std::string(srv.response.encoder_msg.c_str()));
+  }
+
+  bool arm22SimInterface::toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res){
+    res.success = true;
+    res.message = "";
+    return true;
   }
 
   void arm22SimInterface::enforceLimits(ros::Duration &period)
@@ -105,16 +104,29 @@ namespace arm22
 
    */
 
-    if (serial_msg.size() != 26)
+    if (serial_msg.size() != 27)
+    {
+      ROS_WARN("Encoder message with unexpected size: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
       return;
+    }
 
-    auto serial_to_int = [](const std::string &s)
+    if (!is_number(serial_msg.substr(1,24)))
+    {
+      ROS_WARN("Encoder message with non-number character: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
+      return;
+    }
+
+    if (serial_msg.rfind("S000000000000000000000000", 0) == 0){
+      ROS_WARN("Encoder message is all zeros: %ld bytes, [%s]\n You might want to reset encoder positions.", serial_msg.size(), serial_msg.c_str());
+      return;
+    }
+
+    static auto serial_to_int = [](const std::string &s)
     {
       ROS_ASSERT(s.size() == 4);
-      return (s[0] == '0' ? 1 : -1) * stoi(s.substr(1, 3));
+      return stoi(s);
     };
 
-    // Encoder values are in between -999 and 999
     int16_t axis1 = serial_to_int(serial_msg.substr(1, 4));
     int16_t axis2 = serial_to_int(serial_msg.substr(5, 4));
     int16_t axis3 = serial_to_int(serial_msg.substr(9, 4));
@@ -122,20 +134,13 @@ namespace arm22
     int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
     int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
 
-    /* Axis 1 takes values in between -999 and 999, corresponding to -135 deg to 135 deg */
-    /* Axis 2 takes values in between 0 and 999, corresponding to 85.7 deg to 24.2 deg */
-    /* Axis 3 takes values in between 0 and 999, corresponding to 92.6 deg to 145.3 deg 
-  /* Axis 4 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
-    /* Axis 5 takes values in between -999 and 999, corresponding to -90 deg to 90 deg */
-    /* Axis 6 takes values in between -999 and 999, corresponding to -180 deg to 180 deg */
-
-    double axis1_position = rover::map((double)axis1, -999, 999, -135 * DEG_TO_RAD, 135 * DEG_TO_RAD);
-    double axis2_position = rover::map((double)axis2, 0, 999, 0, -(85.7 - 24.2) * DEG_TO_RAD);
-    double axis3_position = rover::map((double)axis3, 0, 999, 0, -(145.3 - 92.6) * DEG_TO_RAD);
-    double axis4_position = rover::map((double)axis4, -999, 999, -90 * DEG_TO_RAD, 90 * DEG_TO_RAD);
-    double axis5_position = rover::map((double)axis5, -999, 999, -90 * DEG_TO_RAD, 90 * DEG_TO_RAD);
-    double axis6_position = rover::map((double)axis6, -999, 999, -180 * DEG_TO_RAD, 180 * DEG_TO_RAD);
-
+    double axis1_position = rover::map((double)axis1, 0, 4096, 3.14, -3.14);
+    double axis2_position = rover::map((double)axis2, 0, 1024+512, -1.57, 1.57/2);
+    // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
+    double axis3_position = rover::map((double)axis3, 512, 1024+512, -1.57/2, 1.57/2);
+    double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
+    double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
+    double axis6_position = rover::map((double)axis6, 0, 9999, -6.28, 6.28);
     joint_position_[0] = axis1_position;
     joint_position_[1] = axis2_position;
     joint_position_[2] = axis3_position;

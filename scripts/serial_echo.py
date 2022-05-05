@@ -5,6 +5,7 @@ import rospy
 
 def handle(req):
     print("Got serial message %s" % req)
+    rospy.sleep(0.015)
     return serialResponse(req.serial_msg)
 
 def serial_echo():

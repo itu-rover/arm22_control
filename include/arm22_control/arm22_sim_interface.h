@@ -8,6 +8,7 @@
 #define ARM22_SIM_INTERFACE_H
 
 #include <ros_control_boilerplate/generic_hw_interface.h>
+#include <std_srvs/Trigger.h>
 
 namespace arm22
 {
@@ -23,8 +24,11 @@ namespace arm22
     virtual void enforceLimits(ros::Duration &period);
 
   protected:
+    bool toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res);
     void feedback(std::string serial_msg);
     ros::ServiceClient _client;
+    
+    ros::ServiceServer write_toggle_service_;
   };
 }
 

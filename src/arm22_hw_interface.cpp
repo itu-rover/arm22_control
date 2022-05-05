@@ -8,6 +8,8 @@
 #include <rover_utils/math_helpers.h>
 #include <string>
 
+const std::string DEBUG_NAME = "hw_interface";
+
 bool is_number(std::string str){
   for(int i = 0; i < str.length(); i++){
     if(str[i] >= '0' && str[i] <= '9') continue;
@@ -25,19 +27,20 @@ namespace arm22
     nh.param("/serial/baudrate", this->baudrate, 1);
     nh.param("/serial/encoder_delta_threshold", this->encoder_delta_threshold, 0.1);
 
-    write_toggle_service_ = nh.advertiseService("/hardware_interface/toggle_write", &arm22HWInterface::toggle_write, this);
+    allow_write_service_ = nh.advertiseService("/hardware_interface/allow_write", &arm22HWInterface::allow_write, this);
 
+    // Initiate serial connection
     try
     {
-      ROS_INFO("Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
+      ROS_INFO_NAMED(DEBUG_NAME, "Trying to connect port: %s, baudrate: %d", this->port.c_str(), this->baudrate);
       serial_ = new serial::Serial(this->port, this->baudrate, serial::Timeout::simpleTimeout(200));
       if (serial_->isOpen())
       {
-        ROS_INFO("Succesfully opened the serial port.");
+        ROS_INFO_NAMED(DEBUG_NAME, "Succesfully opened the serial port.");
       }
       else
       {
-        ROS_ERROR("Failed to open the serial port.");
+        ROS_ERROR_NAMED(DEBUG_NAME, "Failed to open the serial port.");
         ros::shutdown();
       }
     }
@@ -46,26 +49,25 @@ namespace arm22
       switch (e.getErrorNumber())
       {
       case 2:
-        ROS_ERROR("Failed to initiate serial, no such file, check if the serial cable is connected.");
+        ROS_ERROR_NAMED(DEBUG_NAME, "No such file as '%s', TIP: check if the serial cable is connected.", this->port.c_str());
         break;
       case 13:
-        ROS_ERROR("Failed to initiate serial, check permission.");
+        ROS_ERROR_NAMED(DEBUG_NAME, "Failed to initiate serial, TIP: Check permissions.");
         break;
       default:
-        ROS_ERROR("Failed to initiate serial.");
-        ROS_ERROR("ERROR: %s", e.what());
+        ROS_ERROR_NAMED(DEBUG_NAME, "Failed to initiate serial. Full Error: %s", e.what());
         break;
       }
 
-      ROS_ERROR("SHUTTING DOWN!");
+      ROS_ERROR_NAMED(DEBUG_NAME, "Exception while trying to initiate serial, SHUTTING DOWN!");
       ros::shutdown();
     }
   }
 
-  bool arm22::arm22HWInterface::toggle_write(std_srvs::TriggerRequest &req, std_srvs::TriggerResponse &res){
-    WRITE_TO_SERIAL ^= 1;
+  bool arm22::arm22HWInterface::allow_write(std_srvs::SetBoolRequest &req, std_srvs::SetBoolResponse &res){
+    ALLOW_WRITE = req.data;
     res.success = true;
-    res.message = (WRITE_TO_SERIAL ? "Now writing to serial." : "Now stopped writing to serial.");
+    res.message = (ALLOW_WRITE ? "WRITING ALLOWED" : "WRITING DISALLOWED");
     return true;
   }
 
@@ -106,7 +108,7 @@ namespace arm22
     comm_check_bit ^= 1;
     std::string msg_to_send = "";
     
-    if (!WRITE_TO_SERIAL)
+    if (!ALLOW_WRITE)
     {
       joint_position_command_[0] = joint_position_[0];
       joint_position_command_[1] = joint_position_[1];
@@ -127,9 +129,9 @@ namespace arm22
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
     
-    ROS_INFO("%s Sending the msg: %s, length: %ld", (WRITE_TO_SERIAL ? "" : "NOT"), msg_to_send.c_str(), msg_to_send.size());
+    ROS_INFO("%sSerial message: [%s]", (ALLOW_WRITE ? "\033[1;32m" : "\033[1;31m"),msg_to_send.c_str());
 
-    if(WRITE_TO_SERIAL){
+    if(ALLOW_WRITE){
       serial_->write(msg_to_send);
     }
   }
@@ -181,8 +183,8 @@ namespace arm22
       double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
       double axis6_position = rover::map((double)axis6, 0, 9999, -6.28, 6.28);
-      ROS_INFO("%d", WRITE_TO_SERIAL);
-      if (WRITE_TO_SERIAL && (
+      ROS_INFO("%d", ALLOW_WRITE);
+      if (ALLOW_WRITE && (
           fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
           fabs(axis2_position - joint_position_[1]) > encoder_delta_threshold ||
           fabs(axis3_position - joint_position_[2]) > encoder_delta_threshold ||
