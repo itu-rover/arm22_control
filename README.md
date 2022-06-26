@@ -1,9 +1,16 @@
 # ROS Control package for rover 22' manipulator
 
+## Installation
 ---
 **NOTE**
 
 This package has build dependencies on [ros_control_boilerplate (melodic-devel)](https://github.com/PickNikRobotics/ros_control_boilerplate), [serial](https://github.com/wjwwood/serial) and [rover_utils](https://github.com/burkap/rover_utils) pkg
+
+```
+  git clone -b melodic-devel https://github.com/PickNikRobotics/ros_control_boilerplate.git
+  git clone https://github.com/wjwwood/serial
+  git clone https://github.com/burkap/rover_utils
+```
 
 ---
 
