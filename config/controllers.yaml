@@ -14,8 +14,8 @@ hardware_interface:
     - axis_4
     - axis_5
     - axis_6
-    - axis_parmak_1
-    - axis_parmak_2
+    - l_finger
+    - r_finger
 
 # Publish all joint states ----------------------------------
 # Creates the /joint_states topic necessary in ROS

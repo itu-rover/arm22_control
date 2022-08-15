@@ -119,13 +119,13 @@ namespace arm22
     }
 
     msg_to_send += "S";
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], 3.14, -3.14, 0, 4096), 0, 4096));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1],-1.57, 1.57/2, 0, 1024 + 512), 256, 1024+512));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[0], -3.14, 3.14, 0, 4096), 0, 4096));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[1], 1.57, -1.57/2, 0, 1024 + 512), 224, 1024 + 600));
     // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], -1.57, 1.57/2, 0, 1024+512), 350, 1024+512));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], 6.28, -6.28, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[2], 0.0, 3.14, 0, 9999), 320, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], -6.28, 6.28, 0, 9999), 0, 9999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, 0, 9999), 0, 9999));
-    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], -6.28, 6.28, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], 6.28, -6.28, 0, 9999), 0, 9999));
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
     
@@ -176,13 +176,13 @@ namespace arm22
       int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
       int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
 
-      double axis1_position = rover::map((double)axis1, 0, 4096, 3.14, -3.14);
-      double axis2_position = rover::map((double)axis2, 0, 1024+512, -1.57, 1.57/2);
+      double axis1_position = rover::map((double)axis1, 0, 4096, -3.14, 3.14);
+      double axis2_position = rover::map((double)axis2, 0, 1024+512, 1.57, -1.57/2);
       // where 1.0732421875 = 3.14 * 700/2048  pi = 2048
-      double axis3_position = rover::map((double)axis3, 0, 1024+512, -1.57, 1.57/2);
-      double axis4_position = rover::map((double)axis4, 0, 9999, 6.28, -6.28);
+      double axis3_position = rover::map((double)axis3, 0, 9999, 0, 3.14);
+      double axis4_position = rover::map((double)axis4, 0, 9999, -6.28, 6.28);
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
-      double axis6_position = rover::map((double)axis6, 0, 9999, -6.28, 6.28);
+      double axis6_position = rover::map((double)axis6, 0, 9999, 6.28, -6.28);
       ROS_INFO("%d", ALLOW_WRITE);
       if (ALLOW_WRITE && (
           fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
