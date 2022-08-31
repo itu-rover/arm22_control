@@ -28,7 +28,10 @@ namespace arm22
     nh.param("/serial/encoder_delta_threshold", this->encoder_delta_threshold, 0.1);
 
     allow_write_service_ = nh.advertiseService("/hardware_interface/allow_write", &arm22HWInterface::allow_write, this);
-
+    
+    gripper_state_publisher = nh.advertise<std_msgs::Float64>("/gripper/status", 10);
+    gripper_button_state_publisher = nh.advertise<std_msgs::Bool>("/gripper/button_status", 10);
+    gripper_controller = nh.subscribe("/gripper/control", 10, &arm22HWInterface::gripper_control_callback, this);
     // Initiate serial connection
     try
     {
@@ -71,6 +74,11 @@ namespace arm22
     return true;
   }
 
+  void arm22HWInterface::gripper_control_callback(const std_msgs::Float64::ConstPtr& msg){
+    current_gripper_pos = msg->data;
+  }
+
+
   void arm22HWInterface::enforceLimits(ros::Duration &period)
   {
     return;
@@ -99,7 +107,7 @@ namespace arm22
       return ss.str();
     };
 
-    std::string result = serial_->readline(27, "B");
+    std::string result = serial_->readline(32, "B");
 
     ROS_INFO("Got encoder message: %s, length: %ld", result.c_str(), result.size());
     feedback(result);
@@ -126,6 +134,7 @@ namespace arm22
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[3], -6.28, 6.28, 0, 9999), 0, 9999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[4], -1.57, 1.57, 0, 9999), 0, 9999));
     msg_to_send += to_serial(rover::clamp(rover::map(joint_position_command_[5], 6.28, -6.28, 0, 9999), 0, 9999));
+    msg_to_send += to_serial(rover::clamp(rover::map(current_gripper_pos, 0, 1, 1000, 1350), 1000, 1350));
     msg_to_send += (comm_check_bit ? "1" : "0");
     msg_to_send += "F";
     
@@ -139,19 +148,21 @@ namespace arm22
   void arm22HWInterface::feedback(std::string serial_msg)
   {
     /* Assuming serial_msg has the following pattern:
+      T stand for limit switch push button 
+      Y stand for pid status
 
-      A AXIS AXIS AXIS AXIS AXIS AXIS B
-      total length = 26
+      A AXIS AXIS AXIS AXIS AXIS AXIS GRPR T Y B
+      total length = 32
 
     */
 
-    if (serial_msg.size() != 27)
+    if (serial_msg.size() != 32)
     {
       ROS_WARN("Encoder message with unexpected size: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
       return;
     }
 
-    if (!is_number(serial_msg.substr(1,24)))
+    if (!is_number(serial_msg.substr(1,27)))
     {
       ROS_WARN("Encoder message with non-number character: %ld bytes, [%s]", serial_msg.size(), serial_msg.c_str());
       return;
@@ -175,6 +186,8 @@ namespace arm22
       int16_t axis4 = serial_to_int(serial_msg.substr(13, 4));
       int16_t axis5 = serial_to_int(serial_msg.substr(17, 4));
       int16_t axis6 = serial_to_int(serial_msg.substr(21, 4));
+      int16_t gripper = serial_to_int(serial_msg.substr(25, 4));
+      int16_t gripper_button = stoi(serial_msg.substr(29, 1));
 
       double axis1_position = rover::map((double)axis1, 0, 4096, -3.14, 3.14);
       double axis2_position = rover::map((double)axis2, 0, 1024+512, 1.57, -1.57/2);
@@ -183,6 +196,7 @@ namespace arm22
       double axis4_position = rover::map((double)axis4, 0, 9999, -6.28, 6.28);
       double axis5_position = rover::map((double)axis5, 0, 9999, -1.57, 1.57);
       double axis6_position = rover::map((double)axis6, 0, 9999, 6.28, -6.28);
+      double gripper_position = rover::map((double)gripper, 1000, 1350, 0, 1);
       ROS_INFO("%d", ALLOW_WRITE);
       if (ALLOW_WRITE && (
           fabs(axis1_position - joint_position_[0]) > encoder_delta_threshold ||
@@ -207,6 +221,14 @@ namespace arm22
           joint_position_[3] = axis4_position;
           joint_position_[4] = axis5_position;
           joint_position_[5] = axis6_position;
+          std_msgs::Float64 state_msg;
+          state_msg.data = gripper_position;
+          gripper_state_publisher.publish(state_msg);
+
+          std_msgs::Bool button_msg;
+          button_msg.data = gripper_button;
+          gripper_button_state_publisher.publish(button_msg);
+          ROS_INFO("%d", gripper_button);
         }
       }
     catch(std::invalid_argument &e){
